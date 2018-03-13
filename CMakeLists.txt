@@ -120,4 +120,5 @@ set_target_properties(${PROJECT_NAME}_generate_candidates
 #install(TARGETS ${PROJECT_NAME}_grasp_candidates_generator
   #     DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
-#install(DIRECTORY include/gpg DESTINATION include)
+install(DIRECTORY include/gpg DESTINATION include
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
