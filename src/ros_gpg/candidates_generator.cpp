@@ -84,7 +84,7 @@ void CandidatesGenerator::preprocessPointCloud(CloudCamera& cloud_cam)
       else
       {
         cloud_cam.subsampleUniformly(params_.num_samples_);
-        std::cout << "Subsampled " << params_.num_samples_ << " at random uniformly.\n";
+        std::cout << "Subsampled " << cloud_cam.getSampleIndices().size() << " at random uniformly.\n";
       }
     }
   }

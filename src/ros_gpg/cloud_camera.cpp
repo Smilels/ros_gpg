@@ -97,7 +97,7 @@ CloudCamera::CloudCamera(const std::string& filename, const Eigen::Matrix3Xd& vi
   samples_.resize(3,0);
   normals_.resize(3,0);
   cloud_processed_ = loadPointCloudFromFile(filename);
-  cloud_processed_->header.frame_id = "table_top";
+  //cloud_processed_->header.sframe_id = "table_top";
   cloud_original_ = cloud_processed_;
   camera_source_ = Eigen::MatrixXi::Ones(1, cloud_processed_->size());
   std::cout << "Loaded point cloud with " << camera_source_.cols() << " points \n";
