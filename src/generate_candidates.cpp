@@ -144,20 +144,20 @@ int main(int argc, char* argv[])
     std::cout<<"use downward_filter_"<<std::endl;
     //listen to the transform, in order to transfer the vector
     //the transform from frame /table_top to frame kinect2_rgb_optical_frame.
-    tf::StampedTransform transform;
-    try{
-      tf_listener->waitForTransform("kinect2_rgb_optical_frame","/table_top", ros::Time::now(),ros::Duration(5.0));
-      tf_listener->lookupTransform ("kinect2_rgb_optical_frame","/table_top", ros::Time(0), transform);
-    }
-    catch(std::runtime_error &e){
-      std::cout<<"tf listener between kinect2 and table_top happens error"<<std::endl;
-      return 0;
-    }
-
-    tf::Matrix3x3 uptf;
-    uptf.setRotation(transform.inverse().getRotation());
-    Eigen::Matrix3d trans;
-    tf::matrixTFToEigen(uptf,trans);
+    // tf::StampedTransform transform;
+    // try{
+    //   tf_listener->waitForTransform("kinect2_rgb_optical_frame","/table_top", ros::Time::now(),ros::Duration(5.0));
+    //   tf_listener->lookupTransform ("kinect2_rgb_optical_frame","/table_top", ros::Time(0), transform);
+    // }
+    // catch(std::runtime_error &e){
+    //   std::cout<<"tf listener between kinect2 and table_top happens error"<<std::endl;
+    //   return 0;
+    // }
+    //
+    // tf::Matrix3x3 uptf;
+    // uptf.setRotation(transform.inverse().getRotation());
+    // Eigen::Matrix3d trans;
+    // tf::matrixTFToEigen(uptf,trans);
 
     //remedy invaild grasps
       val_hands=candidates;
@@ -165,8 +165,8 @@ int main(int argc, char* argv[])
       std::vector<Grasp> val_hands_before;
       for (int j = 0; j < val_hands.size(); j++)
       {
-        Eigen::Matrix3d frame_rot=val_hands[j].getFrame();
-        Eigen::Matrix3d val_frame=trans*frame_rot;// frame represents in table_top
+        Eigen::Matrix3d val_frame=val_hands[j].getFrame();
+        //Eigen::Matrix3d val_frame=trans*frame_rot;// frame represents in table_top
 
         //calculate the angle between upright direction and approach direction
         tf::Vector3 cam_approch;

@@ -97,6 +97,7 @@ CloudCamera::CloudCamera(const std::string& filename, const Eigen::Matrix3Xd& vi
   samples_.resize(3,0);
   normals_.resize(3,0);
   cloud_processed_ = loadPointCloudFromFile(filename);
+  cloud_processed_->header.frame_id = "table_top";
   cloud_original_ = cloud_processed_;
   camera_source_ = Eigen::MatrixXi::Ones(1, cloud_processed_->size());
   std::cout << "Loaded point cloud with " << camera_source_.cols() << " points \n";
@@ -302,18 +303,20 @@ void CloudCamera::voxelizeCloud(double cell_size)
 
 void CloudCamera::subsampleUniformly(int num_samples)
 {
-  std::cout<<"tf listener between kinect2 and table_top happens error"<<std::endl;
-  tf::StampedTransform transform;
-  try{
-    tf_listener->waitForTransform("/table_top", "kinect2_rgb_optical_frame",ros::Time::now(),ros::Duration(5.0));
-    tf_listener->lookupTransform ("/table_top", "kinect2_rgb_optical_frame",ros::Time(0), transform);
-  }
-  catch(std::runtime_error &e){
-    std::cout<<"tf listener between kinect2 and table_top happens error"<<std::endl;
-    return;
-  }
+  // std::cout<<"tf listener between kinect2 and table_top happens error"<<std::endl;
+  // tf::StampedTransform transform;
+  // try{
+  //   tf_listener->waitForTransform("/table_top", "kinect2_rgb_optical_frame",ros::Time::now(),ros::Duration(5.0));
+  //   tf_listener->lookupTransform ("/table_top", "kinect2_rgb_optical_frame",ros::Time(0), transform);
+  // }
+  // catch(std::runtime_error &e){
+  //   std::cout<<"tf listener between kinect2 and table_top happens error"<<std::endl;
+  //   return;
+  // }
+  // PointCloudRGB::Ptr cloud_processed_table(new PointCloudRGB);
+  // pcl_ros::transformPointCloud(*cloud_processed_,*cloud_processed_table,transform);//transform point cloud in table_top frame
   PointCloudRGB::Ptr cloud_processed_table(new PointCloudRGB);
-  pcl_ros::transformPointCloud(*cloud_processed_,*cloud_processed_table,transform);//transform point cloud in table_top frame
+  cloud_processed_table= cloud_processed_;
   PointCloudRGB::Ptr crop_cloud(new PointCloudRGB);
   PointCloudRGB::Ptr crop_top(new PointCloudRGB);
   std::cout<<"3tf listener between kinect2 and table_top happens error"<<std::endl;
