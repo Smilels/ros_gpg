@@ -32,6 +32,8 @@ std::vector<double> stringToDouble(const std::string& str)
 
 int main(int argc, char* argv[])
 {
+  ros::init(argc, argv, "generate_grasp_candidates");
+  ros::NodeHandle node("~");
   // Read arguments from command line.
   if (argc < 3)
   {

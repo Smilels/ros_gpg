@@ -302,21 +302,21 @@ void CloudCamera::voxelizeCloud(double cell_size)
 
 void CloudCamera::subsampleUniformly(int num_samples)
 {
-  // tf::StampedTransform transform;
-  // try{
-  //   tf_listener->waitForTransform("/table_top", "kinect2_rgb_optical_frame",ros::Time::now(),ros::Duration(5.0));
-  //   tf_listener->lookupTransform ("/table_top", "kinect2_rgb_optical_frame",ros::Time(0), transform);
-  // }
-  // catch(std::runtime_error &e){
-  //   std::cout<<"tf listener between kinect2 and table_top happens error"<<std::endl;
-  //   return;
-  // }
-  // PointCloudRGB::Ptr cloud_processed_table(new PointCloudRGB);
-  // pcl_ros::transformPointCloud(*cloud_processed_,*cloud_processed_table,transform);//transform point cloud in table_top frame
+  std::cout<<"tf listener between kinect2 and table_top happens error"<<std::endl;
+  tf::StampedTransform transform;
+  try{
+    tf_listener->waitForTransform("/table_top", "kinect2_rgb_optical_frame",ros::Time::now(),ros::Duration(5.0));
+    tf_listener->lookupTransform ("/table_top", "kinect2_rgb_optical_frame",ros::Time(0), transform);
+  }
+  catch(std::runtime_error &e){
+    std::cout<<"tf listener between kinect2 and table_top happens error"<<std::endl;
+    return;
+  }
+  PointCloudRGB::Ptr cloud_processed_table(new PointCloudRGB);
+  pcl_ros::transformPointCloud(*cloud_processed_,*cloud_processed_table,transform);//transform point cloud in table_top frame
   PointCloudRGB::Ptr crop_cloud(new PointCloudRGB);
   PointCloudRGB::Ptr crop_top(new PointCloudRGB);
-  PointCloudRGB::Ptr cloud_processed_table(new PointCloudRGB);
-  cloud_processed_table=cloud_processed_;
+  std::cout<<"3tf listener between kinect2 and table_top happens error"<<std::endl;
   pcl::RandomSample<pcl::PointXYZRGBA> random_sample;
   Eigen::MatrixXf pts = cloud_processed_table->getMatrixXfMap();
   Eigen::Vector4f min_pt;
