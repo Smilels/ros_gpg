@@ -273,7 +273,6 @@ void CloudCamera::voxelizeCloud(double cell_size)
   {
     voxels.col(i) = (*it).block(0,0,3,1).cast<float>();
     const int& idx = (*it)(3);
-
     for (int j = 0; j < camera_source_.rows(); j++)
     {
       camera_source(j,i) = (camera_source_(j, idx) == 1) ? 1 : 0;
@@ -284,11 +283,9 @@ void CloudCamera::voxelizeCloud(double cell_size)
     }
     i++;
   }
-
   voxels.row(0) = voxels.row(0) * cell_size + Eigen::VectorXf::Ones(voxels.cols()) * min_xyz(0);
   voxels.row(1) = voxels.row(1) * cell_size + Eigen::VectorXf::Ones(voxels.cols()) * min_xyz(1);
   voxels.row(2) = voxels.row(2) * cell_size + Eigen::VectorXf::Ones(voxels.cols()) * min_xyz(2);
-
   // Copy the voxels into the point cloud.
   cloud_processed_->points.resize(voxels.cols());
   for(int i=0; i < voxels.cols(); i++)
@@ -305,19 +302,21 @@ void CloudCamera::voxelizeCloud(double cell_size)
 
 void CloudCamera::subsampleUniformly(int num_samples)
 {
-  tf::StampedTransform transform;
-  try{
-    tf_listener->waitForTransform("/table_top", "kinect2_rgb_optical_frame",ros::Time::now(),ros::Duration(5.0));
-    tf_listener->lookupTransform ("/table_top", "kinect2_rgb_optical_frame",ros::Time(0), transform);
-  }
-  catch(std::runtime_error &e){
-    std::cout<<"tf listener between kinect2 and table_top happens error"<<std::endl;
-    return;
-  }
-  PointCloudRGB::Ptr cloud_processed_table(new PointCloudRGB);
-  pcl_ros::transformPointCloud(*cloud_processed_,*cloud_processed_table,transform);//transform point cloud in table_top frame
+  // tf::StampedTransform transform;
+  // try{
+  //   tf_listener->waitForTransform("/table_top", "kinect2_rgb_optical_frame",ros::Time::now(),ros::Duration(5.0));
+  //   tf_listener->lookupTransform ("/table_top", "kinect2_rgb_optical_frame",ros::Time(0), transform);
+  // }
+  // catch(std::runtime_error &e){
+  //   std::cout<<"tf listener between kinect2 and table_top happens error"<<std::endl;
+  //   return;
+  // }
+  // PointCloudRGB::Ptr cloud_processed_table(new PointCloudRGB);
+  // pcl_ros::transformPointCloud(*cloud_processed_,*cloud_processed_table,transform);//transform point cloud in table_top frame
   PointCloudRGB::Ptr crop_cloud(new PointCloudRGB);
   PointCloudRGB::Ptr crop_top(new PointCloudRGB);
+  PointCloudRGB::Ptr cloud_processed_table(new PointCloudRGB);
+  cloud_processed_table=cloud_processed_;
   pcl::RandomSample<pcl::PointXYZRGBA> random_sample;
   Eigen::MatrixXf pts = cloud_processed_table->getMatrixXfMap();
   Eigen::Vector4f min_pt;
@@ -325,7 +324,7 @@ void CloudCamera::subsampleUniformly(int num_samples)
   double hand_height = 0.02;
   std::cout << "point cloud z height is :  " << pts.row(2).maxCoeff()-pts.row(2).minCoeff() << "\n";
 
-  if (pts.row(2).maxCoeff()-pts.row(2).minCoeff() < 3*hand_height)
+  if (pts.row(2).maxCoeff()-pts.row(2).minCoeff() < 3*hand_height )
   {
     min_pt << pts.row(0).minCoeff(), pts.row(1).minCoeff(), pts.row(2).minCoeff()+hand_height,0;
     max_pt << pts.row(0).maxCoeff(), pts.row(1).maxCoeff(), pts.row(2).maxCoeff(),0;
@@ -361,7 +360,7 @@ void CloudCamera::subsampleUniformly(int num_samples)
     box_cropper.filter(*crop_cloud);
     std::cout << "middle point clouds :  " << crop_cloud->size() << " points.\n";
 
-    if (num_samples*0.6 > crop_cloud->size())
+    if (std::ceil(num_samples*0.6) > crop_cloud->size())
     {
       sample_indices_.resize(crop_cloud->size());
       for (int i=0; i < crop_cloud->size(); i++)
@@ -369,7 +368,7 @@ void CloudCamera::subsampleUniformly(int num_samples)
     }
     else
     {
-      sample_indices_.resize(num_samples*0.6);
+      sample_indices_.resize(std::ceil(num_samples*0.6));
       random_sample.setInputCloud(crop_cloud);
       random_sample.setSample(num_samples*0.6);
       random_sample.filter(sample_indices_);
@@ -383,7 +382,7 @@ void CloudCamera::subsampleUniformly(int num_samples)
     box_cropper.filter(*crop_top);
     std::cout << "top point clouds have:  " << crop_top->size() << " points.\n";
 
-    int num_top_samples=num_samples*0.4;
+    int num_top_samples=std::ceil(num_samples*0.4);
     std::vector<int> sample_top_indices_;
     if (num_top_samples)
     {

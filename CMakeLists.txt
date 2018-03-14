@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ros_gpg)
-#set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Release)
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+#add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -15,9 +15,9 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_ros
   pcl_conversions
 )
-find_package(Eigen3 REQUIRED)
+
 # Eigen library
-#include_directories(${EIGEN3_INCLUDE_DIR})
+include_directories(${EIGEN3_INCLUDE_DIR})
 
 # PCL
 find_package(PCL REQUIRED)
@@ -25,13 +25,12 @@ include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
-
 set(CMAKE_CXX_FLAGS "-O3 -fopenmp -fPIC -Wno-deprecated -Wenum-compare")
 catkin_package(
    INCLUDE_DIRS include
-   CATKIN_DEPENDS cmake_modules eigen_conversions roscpp
+   CATKIN_DEPENDS cmake_modules roscpp
    LIBRARIES ${PROJECT_NAME}_grasp_candidates_generator
-   DEPENDS Eigen PCL
+   DEPENDS PCL
 )
 include_directories(
  include ${catkin_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} )

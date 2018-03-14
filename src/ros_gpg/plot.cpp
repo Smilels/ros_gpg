@@ -33,8 +33,8 @@ void Plot::plotFingers3D(const std::vector<Grasp>& hand_list, const PointCloudRG
 
   pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGBA> rgb(cloud);
   viewer->addPointCloud<pcl::PointXYZRGBA>(cloud, rgb, "cloud");
-  viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "cloud");
-  //viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_COLOR, 0.7,0.5,0, "cloud");
+  viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "cloud");
+  viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_COLOR, 0.7,0.5,0, "cloud");
 
   runViewer(viewer);
 }

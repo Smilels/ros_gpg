@@ -2,12 +2,13 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
+#include <ros/ros.h>
+#include <tf/transform_listener.h>
 // Custom
 #include <gpg/candidates_generator.h>
 #include <gpg/hand_search.h>
 #include <gpg/config_file.h>
-
+#include <tf_conversions/tf_eigen.h>
 
 // function to read in a double array from a single line of a configuration file
 std::vector<double> stringToDouble(const std::string& str)
@@ -43,6 +44,9 @@ int main(int argc, char* argv[])
 
   // Read parameters from configuration file.
   ConfigFile config_file(argv[1]);
+  Plot plotter;
+  tf::TransformListener *tf_listener;
+  tf_listener = new tf::TransformListener;
 
   double finger_width = config_file.getValueOfKey<double>("finger_width", 0.01);
   double hand_outer_diameter  = config_file.getValueOfKey<double>("hand_outer_diameter", 0.12);
@@ -80,6 +84,7 @@ int main(int argc, char* argv[])
 
   bool plot_grasps = config_file.getValueOfKey<bool>("plot_grasps", true);
   bool plot_normals = config_file.getValueOfKey<bool>("plot_normals", false);
+  bool downward_filter = config_file.getValueOfKey<bool>("downward_filter", false);
   std::cout << "plot_grasps: " << plot_grasps << "\n";
   std::cout << "plot_normals: " << plot_normals << "\n";
 
@@ -131,5 +136,68 @@ int main(int argc, char* argv[])
   // Generate a list of grasp candidates.
   std::vector<Grasp> candidates = candidates_generator.generateGraspCandidates(cloud_cam);
 
+  if (downward_filter)
+  {
+    std::vector<Grasp> val_hands;
+    std::cout<<"use downward_filter_"<<std::endl;
+    //listen to the transform, in order to transfer the vector
+    //the transform from frame /table_top to frame kinect2_rgb_optical_frame.
+    tf::StampedTransform transform;
+    try{
+      tf_listener->waitForTransform("kinect2_rgb_optical_frame","/table_top", ros::Time::now(),ros::Duration(5.0));
+      tf_listener->lookupTransform ("kinect2_rgb_optical_frame","/table_top", ros::Time(0), transform);
+    }
+    catch(std::runtime_error &e){
+      std::cout<<"tf listener between kinect2 and table_top happens error"<<std::endl;
+      return 0;
+    }
+
+    tf::Matrix3x3 uptf;
+    uptf.setRotation(transform.inverse().getRotation());
+    Eigen::Matrix3d trans;
+    tf::matrixTFToEigen(uptf,trans);
+
+    //remedy invaild grasps
+      val_hands=candidates;
+      std::vector<Grasp> val_hands1;
+      std::vector<Grasp> val_hands_before;
+      for (int j = 0; j < val_hands.size(); j++)
+      {
+        Eigen::Matrix3d frame_rot=val_hands[j].getFrame();
+        Eigen::Matrix3d val_frame=trans*frame_rot;// frame represents in table_top
+
+        //calculate the angle between upright direction and approach direction
+        tf::Vector3 cam_approch;
+        tf::vectorEigenToTF(val_frame.col(0),cam_approch);
+        tf::Vector3 cam_z=tf::Vector3 (0,0,1);
+        tfScalar up_angle=cam_approch.angle (cam_z);
+        if (up_angle*180/M_PI<90)
+        {
+          val_hands_before.push_back(val_hands[j]);
+          std::cout<<"now downward_filter_"<<std::endl;
+          Eigen::Matrix3d frame_mat;
+          frame_mat=val_frame;
+          frame_mat.col(0)<<val_frame.col(0)(0),val_frame.col(0)(1),0;
+          frame_mat.col(2)=frame_mat.col(0).cross(frame_mat.col(1));
+          //val_hands[j].pose_.frame_=trans.inverse()*frame_mat; //frame transfer back
+          val_hands[j].pose_.frame_=frame_mat;
+          val_hands1.push_back(val_hands[j]);
+        }
+      }
+
+
+      if (generator_params.plot_grasps_)
+      {
+        const HandSearch::Parameters& params = candidates_generator.getHandSearchParams();
+        plotter.plotFingers3D(val_hands_before, cloud_cam.getCloudOriginal(), "Valid Grasps", params.hand_outer_diameter_,
+          params.finger_width_, params.hand_depth_, params.hand_height_);
+      }
+      if (generator_params.plot_grasps_)
+      {
+        const HandSearch::Parameters& params = candidates_generator.getHandSearchParams();
+        plotter.plotFingers3D(val_hands1, cloud_cam.getCloudOriginal(), "Valid Grasps", params.hand_outer_diameter_,
+          params.finger_width_, params.hand_depth_, params.hand_height_);
+      }
+    }
   return 0;
 }

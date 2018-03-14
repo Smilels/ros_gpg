@@ -33,7 +33,10 @@ GraspSet::GraspSet(const HandGeometry& hand_geometry, const Eigen::VectorXd& ang
 void GraspSet::evaluateHypotheses(const PointList& point_list, const LocalFrame& local_frame)
 {
   //const double Y_STEP_SIZE = 0.05;
-  Eigen::VectorXd y_space = Eigen::VectorXd::LinSpaced(4, -1.0 * M_PI/2.0, 0);
+  Eigen::VectorXd y_space(5);
+  y_space<< -1.0 * M_PI/4.0,-1.0 * M_PI/8.0,0,1.0 * M_PI/8.0, 1.0 * M_PI/4.0;
+
+  //Eigen::VectorXd y_space = Eigen::VectorXd::LinSpaced(4, -1.0 * M_PI/4.0, 1.0 * M_PI/4.0);
   hands_.resize(angles_.size()*y_space.size());
   sample_ = local_frame.getSample();
   is_valid_ = Eigen::Array<bool, 1, Eigen::Dynamic>::Constant(1, angles_.size()*y_space.size(), false);
@@ -59,7 +62,7 @@ void GraspSet::evaluateHypotheses(const PointList& point_list, const LocalFrame&
   //std::cout << " local_frame.getCurvatureAxis() " <<  local_frame.getCurvatureAxis() << "\n";
   //std::cout << " local_frame.getNormal() " <<  local_frame.getNormal() << "\n";
   //each axis vector is a unit vector
-    for (int y = 0; y < y_space.rows(); y++)
+  for (int y = 0; y < y_space.rows(); y++)
   {
     Eigen::Matrix3d y_rot;
     y_rot << cos(y_space(y)),  0.0,   sin(y_space(y)),
