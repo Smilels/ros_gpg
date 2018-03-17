@@ -37,6 +37,8 @@ include_directories(
 # Generate the shared library from the sources
 add_library(${PROJECT_NAME}_grasp_candidates_generator src/${PROJECT_NAME}/candidates_generator.cpp)
 
+add_executable(camera_trans src/camera_trans.cpp)
+target_link_libraries(camera_trans ${catkin_LIBRARIES})
 # Other libraries
 add_library(${PROJECT_NAME}_antipodal src/${PROJECT_NAME}/antipodal.cpp)
 add_library(${PROJECT_NAME}_cloud_camera src/${PROJECT_NAME}/cloud_camera.cpp)
